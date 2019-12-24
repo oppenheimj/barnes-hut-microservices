@@ -1,5 +1,9 @@
 package main
 
-func main() {
+import (
+	"barnes-hut-microservices/internal"
+)
 
+func main() {
+	internal.Run()
 }
