@@ -17,7 +17,7 @@ func generateGif(positions [][]location) {
 	}
 
 	for i := range positions {
-		img := image.NewPaletted(image.Rect(0, 0, 800, 800), palette)
+		img := image.NewPaletted(image.Rect(0, 0, int(width), int(width)), palette)
 		images = append(images, img)
 		delays = append(delays, 1)
 		for j := range positions[i] {
