@@ -6,9 +6,9 @@ import (
 )
 
 var width = 400.0
-var n = 200
+var n = 300
 var ticks = 500
-var g = 6.67e-3 // e-11
+var g = 6.67e-4 // e-11
 var theta = 0.0
 
 // Run the simulation
