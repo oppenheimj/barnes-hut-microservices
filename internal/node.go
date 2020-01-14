@@ -19,15 +19,18 @@ func (n *node) addBody(b *body) {
 	if n.isLeaf() {
 		if n.hasBody() {
 			n.convertToInternal()
-			i := n.locationToChildrenIndex(b.position)
-			n.children[i].addBody(b)
+			n.addBodyToChild(b)
 		} else {
 			n.body = b
 		}
 	} else {
-		i := n.locationToChildrenIndex(b.position)
-		n.children[i].addBody(b)
+		n.addBodyToChild(b)
 	}
+}
+
+func (n *node) addBodyToChild(b *body) {
+	i := n.locationToChildrenIndex(b.position)
+	n.children[i].addBody(b)
 }
 
 func (n *node) contains(b *body) bool {
@@ -63,6 +66,9 @@ func childLocations(l location, w float64) []location {
 	}
 }
 
+// Internal nodes have an array called children which has four elements
+// (since this is a quadtree). This function returns the index of the
+// child node that would contain the provided location.
 func (n *node) locationToChildrenIndex(l location) int {
 	if l.x > n.location.x+n.width/2 {
 		if l.y > n.location.y+n.width/2 {
@@ -76,23 +82,6 @@ func (n *node) locationToChildrenIndex(l location) int {
 	}
 
 	return 2
-}
-
-func (n *node) calculateForceOnBody(b *body) {
-	if n.isLeaf() {
-		if n.hasBody() && n.body != b {
-			b.addForce(n)
-		}
-	} else {
-		threshold := n.width / math.Sqrt(math.Pow(n.centerOfMass.x-b.position.x, 2)+math.Pow(n.centerOfMass.y-b.position.y, 2))
-		if threshold < theta {
-			b.addForce(n)
-		} else {
-			for i := range n.children {
-				n.children[i].calculateForceOnBody(b)
-			}
-		}
-	}
 }
 
 func (n *node) calculateCentersOfMass() {
@@ -118,5 +107,22 @@ func (n *node) calculateCentersOfMass() {
 
 		n.totalMass = totalMass
 		n.centerOfMass = location{x: x / totalMass, y: y / totalMass}
+	}
+}
+
+func (n *node) calculateForceOnBody(b *body) {
+	if n.isLeaf() {
+		if n.hasBody() && n.body != b {
+			b.addForce(n)
+		}
+	} else {
+		threshold := n.width / math.Sqrt(math.Pow(n.centerOfMass.x-b.position.x, 2)+math.Pow(n.centerOfMass.y-b.position.y, 2))
+		if threshold < theta {
+			b.addForce(n)
+		} else {
+			for i := range n.children {
+				n.children[i].calculateForceOnBody(b)
+			}
+		}
 	}
 }

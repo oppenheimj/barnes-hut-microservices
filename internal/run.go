@@ -5,46 +5,25 @@ import (
 	"time"
 )
 
-var width = 800.0
-var n = 2000
+var width = 400.0
+var n = 200
 var ticks = 500
-var g = 6.67e-6 // e-11
-var theta = 0.5
+var g = 6.67e-3 // e-11
+var theta = 0.0
 
 // Run the simulation
 func Run() {
 	bodies := generateRandomBodies(n)
-	data := [][]location{}
+	locationData := [][]location{}
 
 	for t := 0; t < ticks; t++ {
-		data = append(data, extractLocations(bodies))
-		root := node{location: location{x: 0, y: 0}, width: width}
-		for i := range bodies {
-			if root.contains(&bodies[i]) {
-				root.addBody(&bodies[i])
-			}
-		}
-
+		locationData = append(locationData, extractLocations(bodies))
+		root := constructQuadtree(bodies)
 		root.calculateCentersOfMass()
-
-		for i := range bodies {
-			if root.contains(&bodies[i]) {
-				root.calculateForceOnBody(&bodies[i])
-				bodies[i].applyForce()
-			}
-		}
+		calculateAndApplyForces(root, bodies)
 	}
 
-	generateGif(data)
-}
-
-func extractLocations(bodies []body) []location {
-	locations := []location{}
-	for i := range bodies {
-		locations = append(locations, bodies[i].position)
-	}
-
-	return locations
+	generateGif(locationData)
 }
 
 func generateRandomBodies(n int) []body {
@@ -63,4 +42,62 @@ func generateRandomBodies(n int) []body {
 	}
 
 	return points
+}
+
+func generateSpecificBodies() []body {
+	return []body{
+		body{
+			position: location{
+				x: 400.0,
+				y: 400.0,
+			},
+			mass: 100,
+		},
+		body{
+			position: location{
+				x: 200.0,
+				y: 400.0,
+			},
+			mass: 100,
+		},
+		body{
+			position: location{
+				x: 400.0,
+				y: 500.0,
+			},
+			mass: 100,
+		},
+	}
+}
+
+func extractLocations(bodies []body) []location {
+	locations := []location{}
+	for i := range bodies {
+		locations = append(locations, bodies[i].position)
+	}
+
+	return locations
+}
+
+func constructQuadtree(bodies []body) *node {
+	root := node{location: location{x: 0, y: 0}, width: width}
+	for i := range bodies {
+		if root.contains(&bodies[i]) {
+			root.addBody(&bodies[i])
+		}
+	}
+
+	return &root
+}
+
+func calculateAndApplyForces(root *node, bodies []body) {
+	for i := range bodies {
+		if root.contains(&bodies[i]) {
+			root.calculateForceOnBody(&bodies[i])
+		}
+	}
+
+	for i := range bodies {
+		bodies[i].applyForce()
+	}
 }
