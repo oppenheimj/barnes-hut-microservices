@@ -10,4 +10,3 @@ $ go run main.go
 ```
 
 ## Sample output
-<img src='docs/images/animation.gif' width=400>
